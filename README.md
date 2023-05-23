@@ -1,6 +1,6 @@
 # Tongji-OS-PageSwapManagement
 
-同济大学操作系统课内存管理项目-请求调页存储管理方式模拟
+同济大学2021级-操作系统课-内存管理项目-请求调页存储管理方式模拟
 
 ## 项目需求
 
@@ -28,15 +28,15 @@
 ```
 │  README.md
 │
-├─dist
-│  │  main.exe
+├─code
+│  │  main.py
+│  │  MainWindow.py
+│  │  MainWindow.ui
+│  │  manager.py
+│  │  task.py
 │
-└─code
-   │  main.py
-   │  MainWindow.py
-   │  MainWindow.ui
-   │  manager.py
-   │  task.py
+└─dist
+  │  main.exe
 ```
 
 ## 项目展示
