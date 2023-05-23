@@ -1,5 +1,4 @@
 /.idea
-/__pycache__
-/dist
 /build
+/code/__pycache__
 main.spec
