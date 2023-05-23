@@ -39,7 +39,7 @@ class MyManager:
         if memory_page_for_code != -1:  # 在内存中
             log3, log4, log6 = False, -1, memory_page_for_code
         else:  # 不在内存中
-            if self.page_allocate_queue.qsize() < self.task_memory_page_amount:
+            if self.page_allocate_queue.qsize() < self.task_memory_page_amount:  # 内存没有分配满
                 for i in range(self.task_memory_page_amount):
                     if self.task_page[i] is None:  # 找到空位置
                         self.task_page[i] = code_page_id
@@ -47,7 +47,7 @@ class MyManager:
                         self.page_allocate_queue.put(i)
                         log3, log4, log6 = True, -1, i
                         break
-            else:
+            else:  # 内存被分配满 进行页面调换
                 dst_memory_page_id = self.page_allocate_queue.get()  # 从队列中取出最早分配的页序号
                 old_page = self.task_page[dst_memory_page_id]
                 self.task_page[dst_memory_page_id] = code_page_id
@@ -76,7 +76,7 @@ class MyManager:
             self.unused_time[memory_page_for_code] = 0
             log3, log4, log6 = False, -1, memory_page_for_code
         else:  # 不在内存中
-            if self.page_allocated_amount < self.task_memory_page_amount:
+            if self.page_allocated_amount < self.task_memory_page_amount:  # 内存没有分配满
                 for i in range(self.task_memory_page_amount):
                     if self.task_page[i] is None:  # 找到空位置
                         self.task_page[i] = code_page_id
@@ -86,7 +86,7 @@ class MyManager:
                         self.unused_time[i] = 0
                         log3, log4, log6 = True, -1, i
                         break
-            else:
+            else:  # 内存被分配满 进行页面调换
                 dst_memory_page_id = self.unused_time.index(max(self.unused_time))  # 从队列中取出最久未使用的页序号
                 old_page = self.task_page[dst_memory_page_id]
                 self.task_page[dst_memory_page_id] = code_page_id

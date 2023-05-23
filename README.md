@@ -45,7 +45,7 @@
 
 <img title="" src="readme_img/img1.png" alt="" width="390">
 
-在开始执行一次模拟之前，用户可以设定作业的总指令数与采用的页面置换算法。置换算法包括 FIFO 与 LRU。
+在开始执行一次模拟之前，用户可以设定作业的总指令数(默认 320)与采用的页面置换算法(默认 FIFO)。置换算法包括 FIFO 与 LRU。
 
 设定仅在一次模拟开始前生效，模拟过程中更改设定并不会生效。
 
@@ -58,3 +58,70 @@
 界面的右侧包含一个文本框。其中主要打印指令的执行状况，如本次执行的指令的地址、是否发生缺页、换出页与换入页等。
 
 <img title="" src="readme_img/img2.png" alt="" width="390">
+
+## 设计方案
+
+项目整体上分为四个部分，分别是要被模拟执行的作业(Task 类)，使用相应算法为作业分配页面的管理器(MyManager 类)，可视化界面(MainWindow 类)与负责调用管理器、更新界面、响应用户输入的程序主逻辑部分(MyThread 类)。
+
+Task 类的主要作用在于模拟一份作业的指令执行过程。Task 类中包含一个页表，用于记录模拟作业的每一页在模拟分配的内存中的页面位置，未被分配内存则记为-1。Manager 每一次调用 Task 的执行函数，都会返回当前要执行的模拟作业的指令的地址(即 0 到作业总指令数减 1)，该代码在模拟内存中的页面位置，以及该代码位于模拟作业的第几个页面，并按照项目要求的规则在 Task 中生成下一行指令的地址。
+
+MyManager 类的主要作用在于模拟对一份作业的内存分配与页面调换。初始化 Manager 时，会根据设定的不同算法(FIFO 或 LRU)创建不同的数据结构与所需变量，并创建一个数组，模拟分配给 Task 的内存页面。
+
+```
+def __init__(self, page_size, algo):
+    self.task_memory_page_amount = 4 # 分配给任务的页面数
+    self.page_size = page_size # 页面尺寸
+    self.task_page = [None for i in range(self.task_memory_page_amount)] # 分配的页面 记录页面号
+    self.code_num = 0 # 记录执行到第几条代码
+    self.algo = algo # 记录设定的管理器的算法
+
+    if self.algo == 'FIFO': # 根据不同的算法配置不同的参数
+        self.page_allocate_queue = queue.Queue() # 记录页面分配顺序
+    elif self.algo == 'LRU':
+        self.unused_time = [None for i in range(self.task_memory_page_amount)] # 记录页面未被使用的时间
+        self.page_allocated_amount = 0
+```
+
+MyThread 每一次调用 Manager 的执行函数 runTask 时，都会模拟执行一条 Task 的指令。随后，根据所选择的算法，Manager 为 Task 的指令分配模拟内存或者进行页面调换。执行完毕后，Manager 将本次模拟执行的必要信息返回给 MyThread，由 MyThread 根据这些信息进行可视化界面的更新
+
+```
+def runTaskByFIFO(self, task):
+    # 从task中获取当前要执行的代码的信息
+    current_code_id, memory_page_for_code, code_page_id = task.getCurrentCodeId()
+    # 初始化log
+    log1, log2, log3, log4, log5, log6 = 0, 0, False, -1, -1, -1
+    if memory_page_for_code != -1:  # 在内存中
+        ...
+    else:  # 不在内存中
+        if self.page_allocate_queue.qsize() < self.task_memory_page_amount:  # 内存没有分配满
+            ...
+        else:  # 内存被分配满 进行页面调换
+            ...
+    ...
+    return log1, log2, log3, log4, log5, log6
+```
+
+MyThread 的主要作用在于调用 Manager、更新界面并响应用户输入。每一次模拟开始前，MyThread 读取用户对作业最大指令数和页面调换算法的设置等，并根据这些设定初始化 Task 与 Manager。
+
+```
+# 模拟参数初始化
+page_size = 10
+code_amount = ui.spinBox.value()  # 从用户输入读取任务代码数
+page_swap_algo = ui.comboBox.currentText()  # 从用户输入读取所选算法
+# 任务初始化
+task = Task(page_size=page_size, code_amount=code_amount)
+# 管理器初始化 传入不同的算法参数 则后续调用runTask时执行不同的算法
+manager = MyManager(page_size=page_size, algo=page_swap_algo)
+# 缺页数初始化
+page_missing = 0
+```
+
+模拟开始后，MyThread 循化读取当前运行模式(单步执行、连续执行、暂停与重置等等)，并调用 Manager 执行模拟或重置模拟，随后向可视化界面上更新模拟信息。
+
+```
+# 根据设定的调页算法进行Task代码执行，并获取Task代码执行情况与调页情况
+code_num, cur_code, need_swap, old_page, code_page, memory_page = manager.runTask(task)
+...
+# 更新界面
+self.my_trigger_update.emit(code_num, cur_code, need_swap, old_page, code_page, memory_page, page_missing, page_size, code_amount)
+```
