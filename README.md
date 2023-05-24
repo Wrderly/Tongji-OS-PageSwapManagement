@@ -1,6 +1,6 @@
 # Tongji-OS-PageSwapManagement
 
-同济大学2021级-操作系统课-内存管理项目-请求调页存储管理方式模拟
+同济大学 2021 级-操作系统课-内存管理项目-请求调页存储管理方式模拟
 
 ## 项目需求
 
@@ -68,37 +68,37 @@ Task 类的主要作用在于模拟一份作业的指令执行过程。Task 类�
 MyManager 类的主要作用在于模拟对一份作业的内存分配与页面调换。初始化 Manager 时，会根据设定的不同算法(FIFO 或 LRU)创建不同的数据结构与所需变量，并创建一个数组，模拟分配给 Task 的内存页面。
 
 ```
-def __init__(self, page_size, algo):
-    self.task_memory_page_amount = 4 # 分配给任务的页面数
-    self.page_size = page_size # 页面尺寸
-    self.task_page = [None for i in range(self.task_memory_page_amount)] # 分配的页面 记录页面号
-    self.code_num = 0 # 记录执行到第几条代码
-    self.algo = algo # 记录设定的管理器的算法
-
-    if self.algo == 'FIFO': # 根据不同的算法配置不同的参数
-        self.page_allocate_queue = queue.Queue() # 记录页面分配顺序
-    elif self.algo == 'LRU':
-        self.unused_time = [None for i in range(self.task_memory_page_amount)] # 记录页面未被使用的时间
+    def __init__(self, page_size, algo):
+        self.task_memory_page_amount = 4  # 分配给任务的页面数
+        self.page_size = page_size  # 页面尺寸
+        self.task_page = [None for i in range(self.task_memory_page_amount)]  # 分配的页面 记录页面号
+        self.code_num = 0  # 记录执行到第几条代码
+        self.algo = algo  # 记录设定的管理器的算法
         self.page_allocated_amount = 0
+
+        if self.algo == 'FIFO':  # 根据不同的算法配置不同的参数
+            self.page_allocate_queue = queue.Queue()  # 记录页面分配顺序
+        elif self.algo == 'LRU':
+            self.unused_time = [None for i in range(self.task_memory_page_amount)]  # 记录页面未被使用的时间
 ```
 
 MyThread 每一次调用 Manager 的执行函数 runTask 时，都会模拟执行一条 Task 的指令。随后，根据所选择的算法，Manager 为 Task 的指令分配模拟内存或者进行页面调换。执行完毕后，Manager 将本次模拟执行的必要信息返回给 MyThread，由 MyThread 根据这些信息进行可视化界面的更新
 
 ```
-def runTaskByFIFO(self, task):
-    # 从task中获取当前要执行的代码的信息
-    current_code_id, memory_page_for_code, code_page_id = task.getCurrentCodeId()
-    # 初始化log
-    log1, log2, log3, log4, log5, log6 = 0, 0, False, -1, -1, -1
-    if memory_page_for_code != -1:  # 在内存中
+    def runTaskByFIFO(self, task):
+        # 从task中获取当前要执行的代码的信息
+        current_code_id, memory_page_for_code, code_page_id = task.getCurrentCodeId()
+        # 初始化log 用于记录可视化界面所需信息
+        code_num_log, cur_code_log, need_page_log, old_page_log, code_page_log, memory_page_log = 0, 0, False, -1, -1, -1
+        if memory_page_for_code != -1:  # 在内存中
+            ...
+        else:  # 不在内存中
+            if self.page_allocated_amount < self.task_memory_page_amount:  # 内存没有分配满
+                ...
+            else:  # 内存被分配满 进行页面调换
+                ...
         ...
-    else:  # 不在内存中
-        if self.page_allocate_queue.qsize() < self.task_memory_page_amount:  # 内存没有分配满
-            ...
-        else:  # 内存被分配满 进行页面调换
-            ...
-    ...
-    return log1, log2, log3, log4, log5, log6
+        return code_num_log, cur_code_log, need_page_log, old_page_log, code_page_log, memory_page_log
 ```
 
 MyThread 的主要作用在于调用 Manager、更新界面并响应用户输入。每一次模拟开始前，MyThread 读取用户对作业最大指令数和页面调换算法的设置等，并根据这些设定初始化 Task 与 Manager。
