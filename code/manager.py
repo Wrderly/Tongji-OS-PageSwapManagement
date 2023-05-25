@@ -43,47 +43,47 @@ class MyManager:
         # 从task中获取当前要执行的代码的信息
         current_code_id, memory_page_for_code, code_page_id = task.getCurrentCodeId()
         # 初始化log 用于记录可视化界面所需信息
-        code_num_log, cur_code_log, need_page_log, old_page_log, code_page_log, memory_page_log = 0, 0, False, -1, -1, -1
+        log_code_num, log_cur_code, log_page_missing, log_old_page, log_code_page, log_memory_page = 0, 0, False, -1, -1, -1
         if memory_page_for_code != -1:  # 在内存中
-            need_page_log, old_page_log, memory_page_log = False, -1, memory_page_for_code  # 记录可视化界面所需信息
+            log_page_missing, log_old_page, log_memory_page = False, -1, memory_page_for_code  # 记录可视化界面所需信息
         else:  # 不在内存中
             if self.page_allocated_amount < self.task_memory_page_amount:  # 内存没有分配满
                 for i in range(self.task_memory_page_amount):
                     if self.task_page[i] is None:  # 找到空位置
                         self.allocateEmptyPage(i, code_page_id, task)  # 分配空的模拟内存页面
                         self.page_allocate_queue.put(i)  # 插入FIFO算法队列
-                        need_page_log, old_page_log, memory_page_log = True, -1, i  # 记录可视化界面所需信息
+                        log_page_missing, log_old_page, log_memory_page = True, -1, i  # 记录可视化界面所需信息
                         break
             else:  # 内存被分配满 进行页面调换
                 dst_memory_page_id = self.page_allocate_queue.get()  # 从队列中取出最早分配的页序号
                 old_page = self.pageSwap(dst_memory_page_id, code_page_id, task)  # 页面调换
                 self.page_allocate_queue.put(dst_memory_page_id)  # 新分配的页序号插入队尾
-                need_page_log, old_page_log, memory_page_log = True, old_page, dst_memory_page_id  # 记录可视化界面所需信息
-        code_num_log, cur_code_log, code_page_log = self.code_num, current_code_id, code_page_id  # 记录可视化界面所需信息
+                log_page_missing, log_old_page, log_memory_page = True, old_page, dst_memory_page_id  # 记录可视化界面所需信息
+        log_code_num, log_cur_code, log_code_page = self.code_num, current_code_id, code_page_id  # 记录可视化界面所需信息
         self.code_num += 1
-        return code_num_log, cur_code_log, need_page_log, old_page_log, code_page_log, memory_page_log
+        return log_code_num, log_cur_code, log_page_missing, log_old_page, log_code_page, log_memory_page
 
     def runTaskByLRU(self, task):
         # 从task中获取当前要执行的代码的信息
         current_code_id, memory_page_for_code, code_page_id = task.getCurrentCodeId()
         # 初始化log 用于记录可视化界面所需信息
-        code_num_log, cur_code_log, need_page_log, old_page_log, code_page_log, memory_page_log = 0, 0, False, -1, -1, -1
+        log_code_num, log_cur_code, log_page_missing, log_old_page, log_code_page, log_memory_page = 0, 0, False, -1, -1, -1
         if memory_page_for_code != -1:  # 在内存中
             self.add_unused_time(used_page_id=memory_page_for_code)  #
-            need_page_log, old_page_log, memory_page_log = False, -1, memory_page_for_code  # 记录可视化界面所需信息
+            log_page_missing, log_old_page, log_memory_page = False, -1, memory_page_for_code  # 记录可视化界面所需信息
         else:  # 不在内存中
             if self.page_allocated_amount < self.task_memory_page_amount:  # 内存没有分配满
                 for i in range(self.task_memory_page_amount):
                     if self.task_page[i] is None:  # 找到空位置
                         self.allocateEmptyPage(i, code_page_id, task)  # 分配空的模拟内存页面
                         self.add_unused_time(used_page_id=i)  # 更新LRU算法记录的未使用时间
-                        need_page_log, old_page_log, memory_page_log = True, -1, i  # 记录可视化界面所需信息
+                        log_page_missing, log_old_page, log_memory_page = True, -1, i  # 记录可视化界面所需信息
                         break
             else:  # 内存被分配满 进行页面调换
                 dst_memory_page_id = self.unused_time.index(max(self.unused_time))  # 从队列中取出最久未使用的页序号
                 old_page = self.pageSwap(dst_memory_page_id, code_page_id, task)  # 页面调换
                 self.add_unused_time(used_page_id=dst_memory_page_id)  # 更新LRU算法记录的未使用时间
-                need_page_log, old_page_log, memory_page_log = True, old_page, dst_memory_page_id  # 记录可视化界面所需信息
-        code_num_log, cur_code_log, code_page_log = self.code_num, current_code_id, code_page_id  # 记录可视化界面所需信息
+                log_page_missing, log_old_page, log_memory_page = True, old_page, dst_memory_page_id  # 记录可视化界面所需信息
+        log_code_num, log_cur_code, log_code_page = self.code_num, current_code_id, code_page_id  # 记录可视化界面所需信息
         self.code_num += 1
-        return code_num_log, cur_code_log, need_page_log, old_page_log, code_page_log, memory_page_log
+        return log_code_num, log_cur_code, log_page_missing, log_old_page, log_code_page, log_memory_page
