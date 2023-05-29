@@ -116,7 +116,7 @@ manager = MyManager(page_size=page_size, algo=page_swap_algo)
 page_missing = 0
 ```
 
-模拟开始后，MyThread 循化读取当前运行模式(单步执行、连续执行、暂停与重置等等)，并调用 Manager 执行模拟或重置模拟，随后向可视化界面上更新模拟信息。
+模拟开始后，MyThread 循化读取当前运行模式(单步执行、连续执行、暂停与重置等等)并按用户设定的运行模式运行，并调用 Manager 执行模拟或重置模拟，随后向可视化界面上更新模拟信息。
 
 ```
 # 根据设定的调页算法进行Task代码执行，并获取Task代码执行情况与调页情况
@@ -125,3 +125,5 @@ code_num, cur_code, need_swap, old_page, code_page, memory_page = manager.runTas
 # 更新界面
 self.my_trigger_update.emit(code_num, cur_code, need_swap, old_page, code_page, memory_page, page_missing, page_size, code_amount)
 ```
+
+项目的可视化界面基于 python qt5 实现，可视化界面的设计使用 python qt5 的 Qt Designer 工具完成，并生成 ui 的 python 文件。

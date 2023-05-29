@@ -1,10 +1,9 @@
 import sys
 import time
-from PyQt5.QtCore import QThread, pyqtSignal, QSemaphore, QTimer
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-
 import MainWindow
+from PyQt5.QtCore import QThread, pyqtSignal, QSemaphore, QTimer, QCoreApplication, Qt
+from PyQt5.QtGui import QTextCursor
+from PyQt5.QtWidgets import QApplication, QMainWindow
 from task import Task
 from manager import MyManager
 
@@ -236,6 +235,7 @@ class MyThread(QThread):
 
 
 if __name__ == "__main__":
+    QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling)  # 解决高分辨率屏幕显示出错的问题
     app = QApplication(sys.argv)
     main_window = QMainWindow()
     ui = MainWindow.Ui_MainWindow()
